@@ -1,0 +1,2 @@
+requests
+speech_recognition

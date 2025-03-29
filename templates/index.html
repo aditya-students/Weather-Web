@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body id="background">
+    <div class="container">
+        <h1>🌦 Weather App</h1>
+        <input type="text" id="city" placeholder="Enter city">
+        <button onclick="getWeather()">Get Weather</button>
+        <div id="weather-result"></div>
+    </div>
+
+    <script>
+        function getWeather() {
+            let city = document.getElementById("city").value;
+            fetch("/get_weather", {
+                method: "POST",
+                body: new URLSearchParams({ city: city }),
+                headers: { "Content-Type": "application/x-www-form-urlencoded" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById("weather-result").innerText = "City not found!";
+                } else {
+                    let weatherInfo = `
+                        <p><strong>Temperature:</strong> ${data.temperature}°C</p>
+                        <p><strong>Weather:</strong> ${data.weather}</p>
+                        <p><strong>Wind Speed:</strong> ${data.wind_speed} m/s</p>
+                        <p><strong>Sunrise:</strong> ${data.sunrise}</p>
+                        <p><strong>Sunset:</strong> ${data.sunset}</p>
+                        <p><strong>Clothing Suggestion:</strong> ${data.clothing_suggestion}</p>
+                    `;
+                    document.getElementById("weather-result").innerHTML = weatherInfo;
+
+                    // Change background image
+                    document.getElementById("background").style.backgroundImage = `url('/static/images/${data.background_image}')`;
+
+                    // Speak weather details
+                    fetch("/speak_weather", {
+                        method: "POST",
+                        body: JSON.stringify({ text: data.weather_text }),
+                        headers: { "Content-Type": "application/json" }
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>
